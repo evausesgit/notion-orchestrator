@@ -72,7 +72,7 @@ For Docker secrets / Kubernetes secrets, append `_FILE` to the env var to point 
 docker run --secret notion-token \
   -e NOTION_TOKEN_FILE=/run/secrets/notion-token \
   -e NOTION_DATA_SOURCE_ID=... \
-  ghcr.io/evausesgit/notion-orchestrator:latest doctor
+  ghcr.io/evausesgit/notion-orchestrator:0.1.0 doctor
 ```
 
 Supported keys: `NOTION_TOKEN_FILE`, `NOTION_PROPS_JSON_FILE`, `GIT_TOKEN_FILE`.

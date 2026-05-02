@@ -25,4 +25,4 @@ jobs:
             -e GIT_TOKEN=${{ secrets.GITHUB_TOKEN }} \
             -e GIT_BRANCH=${{ github.ref_name }} \
             -e ALLOW_PUSH=true \
-            ghcr.io/evausesgit/notion-orchestrator:latest run
+            ghcr.io/evausesgit/notion-orchestrator:0.1.0 run

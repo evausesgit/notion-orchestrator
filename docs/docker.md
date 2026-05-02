@@ -11,7 +11,7 @@ docker run --rm \
   -e GIT_REPO_URL=https://github.com/you/sandbox.git \
   -e GIT_TOKEN=ghp_xxx \
   -e ALLOW_PUSH=true \
-  ghcr.io/evausesgit/notion-orchestrator:latest run
+  ghcr.io/evausesgit/notion-orchestrator:0.1.0 run
 ```
 
 Each `docker run` re-clones the target repo into the container's `/workspace/repo`, executes one ready task, then exits.
@@ -24,7 +24,7 @@ docker run -d --name notion-orchestrator \
   -e GIT_REPO_URL=... -e GIT_TOKEN=... \
   -e ALLOW_PUSH=true \
   -v notion-orch-workspace:/workspace \
-  ghcr.io/evausesgit/notion-orchestrator:latest run --watch 60
+  ghcr.io/evausesgit/notion-orchestrator:0.1.0 run --watch 60
 ```
 
 Mounting a named volume at `/workspace` keeps the clone between runs, so subsequent fetches are fast (`fetch + reset --hard origin/<branch>`).
@@ -55,7 +55,7 @@ docker run --rm \
   -v "$HOME/.ssh:/home/runner/.ssh:ro" \
   -e NOTION_TOKEN=... -e NOTION_DATA_SOURCE_ID=... \
   -e GIT_REPO_URL=git@github.com:you/sandbox.git \
-  ghcr.io/evausesgit/notion-orchestrator:latest run
+  ghcr.io/evausesgit/notion-orchestrator:0.1.0 run
 ```
 
 The runner does not touch SSH config; it relies on the standard `ssh` CLI behaviour.

@@ -1,6 +1,6 @@
 services:
   orchestrator:
-    image: ghcr.io/evausesgit/notion-orchestrator:latest
+    image: ghcr.io/evausesgit/notion-orchestrator:0.1.0
     restart: unless-stopped
     environment:
       NOTION_TOKEN: ${NOTION_TOKEN}
