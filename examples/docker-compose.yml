@@ -1,0 +1,19 @@
+services:
+  orchestrator:
+    image: ghcr.io/evausesgit/notion-orchestrator:latest
+    restart: unless-stopped
+    environment:
+      NOTION_TOKEN: ${NOTION_TOKEN}
+      NOTION_DATA_SOURCE_ID: ${NOTION_DATA_SOURCE_ID}
+      GIT_REPO_URL: ${GIT_REPO_URL}
+      GIT_TOKEN: ${GIT_TOKEN}
+      GIT_BRANCH: main
+      ALLOW_PUSH: "true"
+      LOG_FORMAT: json
+      LOG_LEVEL: info
+    command: ["run", "--watch", "60"]
+    volumes:
+      - workspace:/workspace
+
+volumes:
+  workspace:

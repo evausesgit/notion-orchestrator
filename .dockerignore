@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+.git
+.github
+test
+docs
+examples
+scripts
+*.md
+!README.md
+.env*
+.editorconfig
+.nvmrc
+*.tsbuildinfo
+.DS_Store

@@ -1,0 +1,35 @@
+name: Smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: doctor against sandbox Notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN_TEST }}
+          NOTION_DATA_SOURCE_ID: ${{ secrets.NOTION_DATA_SOURCE_ID_TEST }}
+          GIT_REPO_URL: ${{ secrets.GIT_REPO_URL_TEST }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN_TEST }}
+        run: node dist/cli.js doctor --json
+
+      - name: list ready tasks
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN_TEST }}
+          NOTION_DATA_SOURCE_ID: ${{ secrets.NOTION_DATA_SOURCE_ID_TEST }}
+        run: node dist/cli.js list --json

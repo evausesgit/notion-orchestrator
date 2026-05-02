@@ -1,0 +1,28 @@
+# Run the orchestrator on a schedule (or manually) from GitHub Actions.
+# Drop this file into .github/workflows/ in the repo you want the orchestrator
+# to operate on, then add the listed secrets.
+
+name: Run notion-orchestrator
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run notion-orchestrator
+        run: |
+          docker run --rm \
+            -e NOTION_TOKEN=${{ secrets.NOTION_TOKEN }} \
+            -e NOTION_DATA_SOURCE_ID=${{ secrets.NOTION_DATA_SOURCE_ID }} \
+            -e GIT_REPO_URL=${{ github.server_url }}/${{ github.repository }}.git \
+            -e GIT_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -e GIT_BRANCH=${{ github.ref_name }} \
+            -e ALLOW_PUSH=true \
+            ghcr.io/evausesgit/notion-orchestrator:latest run

@@ -1,0 +1,51 @@
+{
+  "name": "notion-orchestrator",
+  "version": "0.1.0",
+  "description": "Notion-driven task orchestrator that turns ready Notion rows into verifiable git commits.",
+  "license": "Apache-2.0",
+  "author": "Eva ATTAL <eva.attal@gmail.com>",
+  "homepage": "https://github.com/evausesgit/notion-orchestrator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evausesgit/notion-orchestrator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/evausesgit/notion-orchestrator/issues"
+  },
+  "keywords": [
+    "notion",
+    "orchestrator",
+    "automation",
+    "task-runner",
+    "git",
+    "docker"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "notion-orchestrator": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "smoke": "bash scripts/smoke.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.8"
+  }
+}
