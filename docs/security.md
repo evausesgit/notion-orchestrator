@@ -11,7 +11,7 @@
 
 ## What the runner does NOT do
 
-- Touch `.git/`, `.env*`, `.ssh/`, or `.notion-orchestrator/` paths via task input (rejected before write).
+- Touch `.git/`, `.env`, `.env.*` except `.env.example`, `.ssh/`, or `.notion-orchestrator/` paths via task input (rejected before write).
 - Walk outside the cloned repository (`..` or absolute paths in `Files To Touch` are rejected).
 - Force-push or rewrite history. `commitAndPush` performs a fast-forward `push origin HEAD:<branch>` and will fail if the remote diverged.
 - Log secrets. The logger redacts known tokens before writing.

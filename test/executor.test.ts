@@ -44,6 +44,7 @@ describe("isSafeRelativePath", () => {
   it.each([
     [".env", false],
     [".env.production", false],
+    [".env.example", true],
     [".git/config", false],
     [".ssh/id_rsa", false],
     ["docs/foo.md", true],

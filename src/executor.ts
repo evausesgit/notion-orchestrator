@@ -5,7 +5,7 @@ import type { TaskExecutionResult } from "./runner.js";
 import type { OrchestrationTask } from "./task-types.js";
 import { runAgentCommand, type AgentCommandConfig } from "./agent-executor.js";
 
-const FORBIDDEN_PATH_PREFIXES = [".git/", ".env", ".ssh/", ".notion-orchestrator/"];
+const FORBIDDEN_PATH_PREFIXES = [".git/", ".ssh/", ".notion-orchestrator/"];
 const FORBIDDEN_PATH_EXACT = new Set([".git", ".env", ".ssh"]);
 
 export type ExecutorConfig = {
@@ -118,6 +118,10 @@ export function isSafeRelativePath(target: string) {
   }
 
   if (FORBIDDEN_PATH_EXACT.has(normalized)) {
+    return false;
+  }
+
+  if (normalized.startsWith(".env.") && normalized !== ".env.example") {
     return false;
   }
 

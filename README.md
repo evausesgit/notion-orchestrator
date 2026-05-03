@@ -185,7 +185,7 @@ Full configuration reference: [`docs/configuration.md`](docs/configuration.md).
 
 For an `Execution Mode = agent` task: the runner launches the command configured by `AGENT_COMMAND_JSON` inside the cloned repo. The command receives a task prompt on stdin and can also read the same prompt from `NOTION_ORCHESTRATOR_PROMPT_FILE`. The prompt includes the task title, acceptance criteria, implementation brief, repo areas, and files to touch.
 
-The runner refuses to write to forbidden paths: `.git/`, `.env*`, `.ssh/`, the review artifact directory itself, or anything outside the cloned repo.
+The runner refuses to write to forbidden paths: `.git/`, `.env`, `.env.*` except `.env.example`, `.ssh/`, the review artifact directory itself, or anything outside the cloned repo.
 
 A review artifact is written to `.notion-orchestrator/runs/<run-id>.md` inside the clone, listing the changed files and a review checklist.
 
