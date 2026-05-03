@@ -67,7 +67,10 @@ For example, when running locally with a Codex CLI available on `PATH`:
 
 ```bash
 export AGENT_COMMAND_JSON='["codex","exec","-"]'
+export AGENT_REPAIR_ATTEMPTS=2
 ```
+
+`AGENT_REPAIR_ATTEMPTS` controls how many times the orchestrator reruns the agent after validation fails. Each repair prompt includes the original task, the validation commands, the validation error, and a git diff summary.
 
 When running the Docker image, the configured command must exist inside the image. Use a custom image if your agent CLI is not part of the base `notion-orchestrator` image.
 
@@ -103,6 +106,7 @@ docker run --rm \
   -e GIT_REPO_URL="https://github.com/your-name/notion-orch-sandbox.git" \
   -e GIT_TOKEN="github_pat_xxx" \
   -e AGENT_COMMAND_JSON='["codex","exec","-"]' \
+  -e AGENT_REPAIR_ATTEMPTS=2 \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 run
 ```
 
@@ -127,6 +131,7 @@ docker run --rm \
   -e NOTION_TOKEN="..." -e NOTION_DATA_SOURCE_ID="..." \
   -e GIT_REPO_URL="..." -e GIT_TOKEN="..." \
   -e AGENT_COMMAND_JSON='["codex","exec","-"]' \
+  -e AGENT_REPAIR_ATTEMPTS=2 \
   -e ALLOW_PUSH=true \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 run
 ```
@@ -159,6 +164,7 @@ docker run -d --name notion-orchestrator \
   -e NOTION_TOKEN="..." -e NOTION_DATA_SOURCE_ID="..." \
   -e GIT_REPO_URL="..." -e GIT_TOKEN="..." \
   -e AGENT_COMMAND_JSON='["codex","exec","-"]' \
+  -e AGENT_REPAIR_ATTEMPTS=2 \
   -e ALLOW_PUSH=true \
   -v notion-orch-workspace:/workspace \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 run --watch 60
@@ -205,7 +211,7 @@ A review artifact is written to `.notion-orchestrator/runs/<run-id>.md` inside t
 
 **The runner says "skipped"** — the task has no `Execution Mode` set, or it is set to `manual`. Set it to `agent`.
 
-**The runner says "blocked"** — the task is missing `Files To Touch`, `Implementation Brief`, or `Acceptance Criteria`, `AGENT_COMMAND_JSON` is not configured, or `Files To Touch` includes a forbidden path. Check the `Agent Output` field in Notion for the exact reason.
+**The runner says "blocked"** — the task is missing `Files To Touch`, `Implementation Brief`, or `Acceptance Criteria`, `AGENT_COMMAND_JSON` is not configured, `Files To Touch` includes a forbidden path, or validation still fails after `AGENT_REPAIR_ATTEMPTS`. Check the `Agent Output` field in Notion for the exact reason.
 
 ## Safety
 

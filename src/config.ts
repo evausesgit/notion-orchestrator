@@ -29,6 +29,7 @@ export type Config = {
   defaultValidationCommands: string[];
   agentCommand: string[];
   agentTimeoutMs: number;
+  agentRepairAttempts: number;
   allowPush: boolean;
   watchIntervalSec?: number;
   watchBackoffMaxSec: number;
@@ -60,6 +61,7 @@ const argSpec: ParseArgsConfig["options"] = {
   "default-validation": { type: "string" },
   "agent-command": { type: "string" },
   "agent-timeout-ms": { type: "string" },
+  "agent-repair-attempts": { type: "string" },
   "allow-push": { type: "boolean" },
   watch: { type: "string" },
   once: { type: "boolean" },
@@ -147,6 +149,11 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
   const agentTimeoutMs =
     parseOptionalNumber(values["agent-timeout-ms"], env.AGENT_TIMEOUT_MS) ??
     15 * 60 * 1000;
+  const agentRepairAttempts =
+    parseOptionalNumber(
+      values["agent-repair-attempts"],
+      env.AGENT_REPAIR_ATTEMPTS,
+    ) ?? 0;
 
   const allowPush = parseBool(values["allow-push"], env.ALLOW_PUSH, false);
   const dryRun = parseBool(values["dry-run"], undefined, false);
@@ -203,6 +210,7 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
     defaultValidationCommands,
     agentCommand,
     agentTimeoutMs,
+    agentRepairAttempts,
     allowPush,
     watchIntervalSec,
     watchBackoffMaxSec,
@@ -257,6 +265,7 @@ function makeHelpConfig(input: { command: "help" | "version"; helpTopic?: string
     defaultValidationCommands: [],
     agentCommand: [],
     agentTimeoutMs: 15 * 60 * 1000,
+    agentRepairAttempts: 0,
     allowPush: false,
     watchBackoffMaxSec: 300,
     dryRun: false,

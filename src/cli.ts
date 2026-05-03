@@ -7,8 +7,10 @@ import { createLogger, type Logger } from "./logger.js";
 import { NotionApiTaskTrackerAdapter } from "./notion-adapter.js";
 import { TaskRunner } from "./runner.js";
 import { createExecutor } from "./executor.js";
+import { runAgentRepairCommand } from "./agent-executor.js";
 import {
   commitAndPush,
+  getRepoDiffSummary,
   getRemoteOrigin,
   listChangedFiles,
   runRepoChecks,
@@ -17,6 +19,7 @@ import {
 } from "./git-ops.js";
 import { setupWorkspace } from "./workspace.js";
 import { watch } from "./watch.js";
+import type { OrchestrationTask } from "./task-types.js";
 
 const HELP = `notion-orchestrator — pick ready tasks from Notion and turn them into git commits.
 
@@ -52,6 +55,7 @@ Common options:
   --default-validation <cmds>     Comma- or newline-separated fallback validation commands.
   --agent-command <json>          JSON array command for Execution Mode = agent.
   --agent-timeout-ms <ms>         Agent command timeout (default: 900000).
+  --agent-repair-attempts <n>     Agent retries after validation failures (default: 0).
   --allow-push                    Permit committing and pushing. Default: dry path only.
 
 Run-mode:
@@ -236,7 +240,7 @@ async function runCommand(
           return execution;
         }
 
-        const changedFiles =
+        let changedFiles =
           "changedFiles" in execution && execution.changedFiles
             ? execution.changedFiles
             : await listChangedFiles(workspace.repoDir);
@@ -259,7 +263,21 @@ async function runCommand(
           );
         }
 
-        await runRepoChecks(workspace.repoDir, validationCommands);
+        await runValidationWithRepairs({
+          repoRoot: workspace.repoDir,
+          task,
+          validationCommands,
+          config,
+          logger,
+        });
+
+        changedFiles = await listChangedFiles(workspace.repoDir);
+        if (changedFiles.length === 0) {
+          return {
+            outcome: "skipped" as const,
+            summary: `No repo diff remained after validating ${task.taskId}; nothing was committed.`,
+          };
+        }
 
         if (!config.allowPush || config.dryRun) {
           logger.info(
@@ -370,6 +388,51 @@ function pickReadyStatus(config: Config) {
     | "Blocked"
     | "In Review"
     | "Done";
+}
+
+async function runValidationWithRepairs(input: {
+  repoRoot: string;
+  task: OrchestrationTask;
+  validationCommands: string[];
+  config: Config;
+  logger: Logger;
+}) {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await runRepoChecks(input.repoRoot, input.validationCommands);
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const repairAttempt = attempt + 1;
+
+      if (
+        repairAttempt > input.config.agentRepairAttempts ||
+        input.config.agentCommand.length === 0
+      ) {
+        throw error;
+      }
+
+      input.logger.warn(
+        `${input.task.taskId}: validation failed; running repair attempt ${repairAttempt}/${input.config.agentRepairAttempts}.`,
+      );
+
+      await runAgentRepairCommand(
+        input.task,
+        {
+          repoRoot: input.repoRoot,
+          command: input.config.agentCommand,
+          timeoutMs: input.config.agentTimeoutMs,
+        },
+        {
+          attempt: repairAttempt,
+          maxAttempts: input.config.agentRepairAttempts,
+          validationCommands: input.validationCommands,
+          validationError: message,
+          repoDiffSummary: await getRepoDiffSummary(input.repoRoot),
+        },
+      );
+    }
+  }
 }
 
 async function readPackageVersion() {

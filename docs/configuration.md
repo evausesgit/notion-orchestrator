@@ -41,6 +41,7 @@ For SSH URLs, mount `~/.ssh` into the container yourself; the runner does not ma
 | `DEFAULT_VALIDATION_COMMANDS` | `--default-validation` | empty | Used when a task supplies no `Validation Commands` |
 | `AGENT_COMMAND_JSON` (`_FILE`) | `--agent-command` | empty | JSON array command for `Execution Mode = agent`; receives the prompt on stdin and via `NOTION_ORCHESTRATOR_PROMPT_FILE` |
 | `AGENT_TIMEOUT_MS` | `--agent-timeout-ms` | `900000` | Agent command timeout in milliseconds |
+| `AGENT_REPAIR_ATTEMPTS` | `--agent-repair-attempts` | `0` | Number of times to rerun the agent when validation fails before blocking the task |
 | `ALLOW_PUSH` | `--allow-push` | `false` | Master switch for committing and pushing |
 
 ## Run-mode flags

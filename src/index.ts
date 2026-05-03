@@ -20,9 +20,12 @@ export {
 } from "./runner.js";
 export {
   buildAgentPrompt,
+  buildAgentRepairPrompt,
   runAgentCommand,
+  runAgentRepairCommand,
   type AgentCommandConfig,
   type AgentCommandResult,
+  type AgentRepairInput,
 } from "./agent-executor.js";
 
 export {
@@ -38,6 +41,7 @@ export {
   commitAndPush,
   configureCommitter,
   currentRevision,
+  getRepoDiffSummary,
   getRemoteOrigin,
   listChangedFiles,
   runRepoChecks,

@@ -15,6 +15,14 @@ export type AgentCommandResult = {
   stderr: string;
 };
 
+export type AgentRepairInput = {
+  attempt: number;
+  maxAttempts: number;
+  validationCommands: string[];
+  validationError: string;
+  repoDiffSummary: string;
+};
+
 const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000;
 const OUTPUT_LIMIT = 20_000;
 
@@ -71,6 +79,55 @@ export async function runAgentCommand(
   } finally {
     await rm(promptDir, { recursive: true, force: true });
   }
+}
+
+export async function runAgentRepairCommand(
+  task: OrchestrationTask,
+  config: AgentCommandConfig,
+  repair: AgentRepairInput,
+): Promise<AgentCommandResult> {
+  if (config.command.length === 0) {
+    throw new Error("AGENT_COMMAND_JSON must be configured for repair attempts.");
+  }
+
+  const prompt = buildAgentRepairPrompt(task, repair);
+  const promptDir = await mkdtemp(path.join(os.tmpdir(), "notion-orch-agent-"));
+  const promptPath = path.join(promptDir, "prompt.md");
+  await writeFile(promptPath, prompt, "utf8");
+
+  try {
+    return await spawnAgent(config, prompt, promptPath);
+  } finally {
+    await rm(promptDir, { recursive: true, force: true });
+  }
+}
+
+export function buildAgentRepairPrompt(
+  task: OrchestrationTask,
+  repair: AgentRepairInput,
+) {
+  return [
+    buildAgentPrompt(task),
+    "",
+    "Repair Attempt:",
+    `${repair.attempt} of ${repair.maxAttempts}`,
+    "",
+    "The previous implementation attempt left a diff, but validation failed.",
+    "Inspect the current working tree, make the minimal changes needed to fix validation, and keep the original task contract intact.",
+    "",
+    "Validation Commands:",
+    ...(repair.validationCommands.length > 0
+      ? repair.validationCommands.map((command) => `- ${command}`)
+      : ["- No validation commands were configured."]),
+    "",
+    "Validation Error:",
+    repair.validationError || "No validation error output was captured.",
+    "",
+    "Current Git Diff Summary:",
+    repair.repoDiffSummary || "No git diff summary was captured.",
+    "",
+    "Return a concise summary of the repair and validation.",
+  ].join("\n");
 }
 
 function spawnAgent(

@@ -144,5 +144,5 @@ After execution it transitions:
 
 - `Done` if a commit was pushed
 - `In Review` if the change was produced but pushing is disabled
-- `Blocked` if execution failed or the task is malformed
+- `Blocked` if execution failed, validation still fails after `AGENT_REPAIR_ATTEMPTS`, or the task is malformed
 - `Todo` if `Execution Mode` is `manual` (deliberately skipped)

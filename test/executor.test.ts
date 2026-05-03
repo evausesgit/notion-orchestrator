@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createExecutor, isSafeRelativePath } from "../src/executor.js";
-import { buildAgentPrompt } from "../src/agent-executor.js";
+import { buildAgentPrompt, buildAgentRepairPrompt } from "../src/agent-executor.js";
 import type { OrchestrationTask } from "../src/task-types.js";
 
 const execFileAsync = promisify(execFile);
@@ -163,5 +163,30 @@ describe("buildAgentPrompt", () => {
     expect(prompt).toContain("Implement the fix");
     expect(prompt).toContain("- src/a.ts");
     expect(prompt).toContain("Do not commit or push");
+  });
+
+  it("includes validation failure context in repair prompts", () => {
+    const prompt = buildAgentRepairPrompt(
+      makeTask({
+        taskId: "MSA-020",
+        title: "Configure Vitest",
+        executionMode: "agent",
+        filesToTouch: ["package.json"],
+        implementationBrief: "Add test runner",
+      }),
+      {
+        attempt: 1,
+        maxAttempts: 2,
+        validationCommands: ["npm run test"],
+        validationError: "Cannot find module 'vitest'",
+        repoDiffSummary: "M package.json",
+      },
+    );
+
+    expect(prompt).toContain("Repair Attempt:");
+    expect(prompt).toContain("1 of 2");
+    expect(prompt).toContain("npm run test");
+    expect(prompt).toContain("Cannot find module 'vitest'");
+    expect(prompt).toContain("M package.json");
   });
 });

@@ -17,10 +17,12 @@ describe("loadConfig", () => {
       env: {
         ...baseEnv,
         AGENT_COMMAND_JSON: '["codex","exec","-"]',
+        AGENT_REPAIR_ATTEMPTS: "2",
       },
     });
 
     expect(config.agentCommand).toEqual(["codex", "exec", "-"]);
+    expect(config.agentRepairAttempts).toBe(2);
   });
 
   it("reads AGENT_COMMAND_JSON_FILE", async () => {
@@ -37,5 +39,17 @@ describe("loadConfig", () => {
     });
 
     expect(config.agentCommand).toEqual(["node", "agent.js"]);
+  });
+
+  it("lets CLI flags override agent repair attempts", async () => {
+    const config = await loadConfig({
+      argv: ["run", "--agent-repair-attempts", "3"],
+      env: {
+        ...baseEnv,
+        AGENT_REPAIR_ATTEMPTS: "1",
+      },
+    });
+
+    expect(config.agentRepairAttempts).toBe(3);
   });
 });

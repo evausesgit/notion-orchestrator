@@ -25,6 +25,25 @@ export async function listChangedFiles(repoRoot: string) {
     .map((line) => line.replace(/^[A-Z? ]{1,2}\s+/, ""));
 }
 
+export async function getRepoDiffSummary(repoRoot: string) {
+  const [status, diffStat] = await Promise.all([
+    execFileAsync("git", ["-C", repoRoot, "status", "--short"]).then(
+      ({ stdout }) => stdout.trim(),
+    ),
+    execFileAsync("git", ["-C", repoRoot, "diff", "--stat"]).then(
+      ({ stdout }) => stdout.trim(),
+    ),
+  ]);
+
+  return [
+    "git status --short:",
+    status || "(clean)",
+    "",
+    "git diff --stat:",
+    diffStat || "(no tracked diff)",
+  ].join("\n");
+}
+
 export type RunRepoChecksOptions = {
   shell?: string;
 };
