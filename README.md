@@ -44,7 +44,7 @@ In the database, add a row with these exact values:
 | ID | `TEST-001` |
 | Status | `Todo` |
 | Acceptance Criteria | `File docs/hello-from-orchestrator.md exists` |
-| Execution Mode | `generic_markdown` |
+| Execution Mode | `agent` |
 | Files To Touch | `docs/hello-from-orchestrator.md` |
 | Implementation Brief | `This file was created by notion-orchestrator from a Notion task.` |
 
@@ -168,9 +168,7 @@ Full configuration reference: [`docs/configuration.md`](docs/configuration.md).
 
 ## What gets written to your repo
 
-For an `Execution Mode = generic_markdown` task: the runner appends a `## <ID> Execution` section to each path listed in `Files To Touch`, using the `Implementation Brief` as the body. Creates the file if missing.
-
-For `Execution Mode = generic_spec`: the runner creates the first listed file as a spec doc (Title + Scope + Acceptance Criteria) and any subsequent files as TypeScript placeholders that export the brief.
+For an `Execution Mode = agent` task: the runner appends a `## <ID> Execution` section to each path listed in `Files To Touch`, using the `Implementation Brief` as the body. Creates the file if missing.
 
 The runner refuses to write to forbidden paths: `.git/`, `.env*`, `.ssh/`, the review artifact directory itself, or anything outside the cloned repo.
 
@@ -190,7 +188,7 @@ A review artifact is written to `.notion-orchestrator/runs/<run-id>.md` inside t
 
 **Task stuck in `In Progress`** — the runner crashed mid-execution. Manually flip the task back to `Todo` in Notion. The runner intentionally never re-picks `In Progress` rows to avoid duplicate work.
 
-**The runner says "skipped"** — the task has no `Execution Mode` set, or it is set to `manual`/`manual_handler`. Set it to `generic_markdown` or `generic_spec`.
+**The runner says "skipped"** — the task has no `Execution Mode` set, or it is set to `manual`. Set it to `agent`.
 
 **The runner says "blocked"** — the task is missing `Files To Touch`, `Implementation Brief`, or `Acceptance Criteria`, or `Files To Touch` includes a forbidden path. Check the `Agent Output` field in Notion for the exact reason.
 

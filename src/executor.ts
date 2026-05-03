@@ -18,11 +18,7 @@ export function createExecutor(config: ExecutorConfig) {
     task: OrchestrationTask,
     runId: string,
   ): Promise<TaskExecutionResult> {
-    if (
-      !task.executionMode ||
-      task.executionMode === "manual" ||
-      task.executionMode === "manual_handler"
-    ) {
+    if (!task.executionMode || task.executionMode === "manual") {
       return {
         outcome: "skipped",
         summary: `${task.taskId} is configured for manual execution; orchestrator will not modify the repo.`,
@@ -32,7 +28,7 @@ export function createExecutor(config: ExecutorConfig) {
     if (task.filesToTouch.length === 0 || !task.implementationBrief) {
       return {
         outcome: "blocked",
-        summary: `${task.taskId} is configured for generic execution but is missing Files To Touch or Implementation Brief.`,
+        summary: `${task.taskId} is configured for agent execution but is missing Files To Touch or Implementation Brief.`,
       };
     }
 
@@ -47,50 +43,15 @@ export function createExecutor(config: ExecutorConfig) {
 
     const changedFilesBefore = await listGitChangedFiles(config.repoRoot);
 
-    if (task.executionMode === "generic_markdown") {
-      for (const relativeFile of task.filesToTouch) {
-        const absoluteFile = path.join(config.repoRoot, relativeFile);
-        await ensureFile(
-          absoluteFile,
-          [`# ${task.title}`, "", task.implementationBrief].join("\n"),
-        );
+    for (const relativeFile of task.filesToTouch) {
+      const absoluteFile = path.join(config.repoRoot, relativeFile);
+      await ensureFile(
+        absoluteFile,
+        [`# ${task.title}`, "", task.implementationBrief].join("\n"),
+      );
 
-        const sectionHeading = `## ${task.taskId} Execution`;
-        await ensureSection(absoluteFile, sectionHeading, task.implementationBrief);
-      }
-    } else if (task.executionMode === "generic_spec") {
-      const mainFile = task.filesToTouch[0];
-
-      if (mainFile) {
-        await ensureFile(
-          path.join(config.repoRoot, mainFile),
-          [
-            `# ${task.title}`,
-            "",
-            "## Scope",
-            "",
-            task.implementationBrief,
-            "",
-            "## Acceptance Criteria",
-            "",
-            task.acceptanceCriteria || "Not specified.",
-          ].join("\n"),
-        );
-      }
-
-      for (const relativeFile of task.filesToTouch.slice(1)) {
-        await ensureFile(
-          path.join(config.repoRoot, relativeFile),
-          [
-            "export type Placeholder = {",
-            `  taskId: "${task.taskId}";`,
-            "};",
-            "",
-            `export const implementationBrief = ${JSON.stringify(task.implementationBrief)};`,
-            "",
-          ].join("\n"),
-        );
-      }
+      const sectionHeading = `## ${task.taskId} Execution`;
+      await ensureSection(absoluteFile, sectionHeading, task.implementationBrief);
     }
 
     const changedFilesAfter = await listGitChangedFiles(config.repoRoot);
@@ -109,7 +70,7 @@ export function createExecutor(config: ExecutorConfig) {
     return {
       outcome: "in_review",
       summary: [
-        `Executed ${task.taskId} through the generic Notion-driven executor.`,
+        `Executed ${task.taskId} through the agent Notion-driven executor.`,
         newChangedFiles.length > 0
           ? `Changed files: ${newChangedFiles.join(", ")}.`
           : "The executor was idempotent and did not introduce a new diff.",

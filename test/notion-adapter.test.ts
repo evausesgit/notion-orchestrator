@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   InMemoryNotionAdapter,
   mapNotionPageToTask,
+  normalizeExecutionMode,
   truncateForNotion,
 } from "../src/notion-adapter.js";
 import { mergePropertyMap } from "../src/notion-properties.js";
@@ -126,6 +127,15 @@ describe("mapNotionPageToTask", () => {
     expect(task.priority).toBe("P0");
     expect(task.sprint).toBe("Q1");
     expect(task.repoArea).toEqual(["docs"]);
+  });
+
+  it("normalizes execution mode values to manual or agent", () => {
+    expect(normalizeExecutionMode("manual")).toBe("manual");
+    expect(normalizeExecutionMode("manual_handler")).toBe("manual");
+    expect(normalizeExecutionMode("agent")).toBe("agent");
+    expect(normalizeExecutionMode("generic_markdown")).toBe("agent");
+    expect(normalizeExecutionMode("generic_spec")).toBe("agent");
+    expect(normalizeExecutionMode("unknown")).toBeUndefined();
   });
 });
 

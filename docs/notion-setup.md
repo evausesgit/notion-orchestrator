@@ -31,7 +31,7 @@ These 7 columns drive the runner's behavior. Without them, the task is rejected.
 | ID | Text | `TEST-001` |
 | Status | Select — options: `Inbox`, `Todo`, `In Progress`, `In Review`, `Done`, `Blocked` | `Todo` |
 | Acceptance Criteria | Text | `File docs/hello.md exists` |
-| Execution Mode | Select — options: `manual`, `manual_handler`, `generic_markdown`, `generic_spec` | `generic_markdown` |
+| Execution Mode | Select — options: `manual`, `agent` | `agent` |
 | Files To Touch | Text (newline- or comma-separated relative paths) | `docs/hello.md` |
 | Implementation Brief | Text | `Body of the markdown section the runner will write.` |
 
@@ -145,4 +145,4 @@ After execution it transitions:
 - `Done` if a commit was pushed
 - `In Review` if the change was produced but pushing is disabled
 - `Blocked` if execution failed or the task is malformed
-- `Todo` if `Execution Mode` is `manual`/`manual_handler` (deliberately skipped)
+- `Todo` if `Execution Mode` is `manual` (deliberately skipped)

@@ -74,7 +74,7 @@ describe("createExecutor", () => {
     });
     const result = await executor(
       makeTask({
-        executionMode: "generic_markdown",
+        executionMode: "agent",
         filesToTouch: [".env"],
         implementationBrief: "x",
       }),
@@ -84,7 +84,7 @@ describe("createExecutor", () => {
     expect(result.summary).toContain("forbidden path");
   });
 
-  it("creates the requested file with generic_markdown mode", async () => {
+  it("creates the requested file with agent mode", async () => {
     const executor = createExecutor({
       repoRoot: workDir,
       reviewArtifactDir: ".notion-orchestrator/runs",
@@ -92,7 +92,7 @@ describe("createExecutor", () => {
     const result = await executor(
       makeTask({
         title: "Hello",
-        executionMode: "generic_markdown",
+        executionMode: "agent",
         filesToTouch: ["docs/from-test.md"],
         implementationBrief: "Body of the doc",
       }),
@@ -111,29 +111,4 @@ describe("createExecutor", () => {
     expect(reviewArtifact.isFile()).toBe(true);
   });
 
-  it("creates spec + placeholder files in generic_spec mode", async () => {
-    const executor = createExecutor({
-      repoRoot: workDir,
-      reviewArtifactDir: ".notion-orchestrator/runs",
-    });
-    const result = await executor(
-      makeTask({
-        title: "Spec",
-        executionMode: "generic_spec",
-        filesToTouch: ["specs/feature.md", "src/feature.ts"],
-        implementationBrief: "Define feature contract",
-        acceptanceCriteria: "Has type def",
-      }),
-      "run_spec_1",
-    );
-
-    expect(result.outcome).toBe("in_review");
-
-    const spec = await readFile(path.join(workDir, "specs/feature.md"), "utf8");
-    expect(spec).toContain("# Spec");
-    expect(spec).toContain("Define feature contract");
-
-    const placeholder = await readFile(path.join(workDir, "src/feature.ts"), "utf8");
-    expect(placeholder).toContain('taskId: "T-1"');
-  });
 });

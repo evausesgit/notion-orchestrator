@@ -20,11 +20,7 @@ export type TaskType =
 
 export type Priority = "P0" | "P1" | "P2" | "P3";
 
-export type ExecutionMode =
-  | "manual"
-  | "generic_markdown"
-  | "generic_spec"
-  | "manual_handler";
+export type ExecutionMode = "manual" | "agent";
 
 export type AutomationPolicy =
   | "autonomous"

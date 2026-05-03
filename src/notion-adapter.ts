@@ -254,7 +254,7 @@ export function mapNotionRowToTask(row: NotionRow): OrchestrationTask {
     runId: props.runId,
     lastUpdatedByAgent: props.lastUpdatedByAgent,
     link: props.link,
-    executionMode: props.executionMode,
+    executionMode: normalizeExecutionMode(props.executionMode),
     filesToTouch: props.filesToTouch ?? [],
     implementationBrief: props.implementationBrief,
     validationCommands: props.validationCommands ?? [],
@@ -285,9 +285,7 @@ export function mapNotionPageToTask(
     runId: readRichText(get("runId")) || undefined,
     lastUpdatedByAgent: readRichText(get("lastUpdatedByAgent")) || undefined,
     link: readUrl(get("link")) || undefined,
-    executionMode:
-      (readSelect(get("executionMode")) as OrchestrationTask["executionMode"]) ||
-      undefined,
+    executionMode: normalizeExecutionMode(readSelect(get("executionMode"))),
     filesToTouch: splitLinesOrCsv(readRichText(get("filesToTouch"))),
     implementationBrief: readRichText(get("implementationBrief")) || undefined,
     validationCommands: splitLinesOrCsv(readRichText(get("validationCommands"))),
@@ -308,6 +306,24 @@ export function compareTasks(left: OrchestrationTask, right: OrchestrationTask) 
   }
 
   return left.taskId.localeCompare(right.taskId);
+}
+
+export function normalizeExecutionMode(
+  value: string | undefined,
+): OrchestrationTask["executionMode"] | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  if (value === "manual" || value === "manual_handler") {
+    return "manual";
+  }
+
+  if (value === "agent" || value === "generic_markdown" || value === "generic_spec") {
+    return "agent";
+  }
+
+  return undefined;
 }
 
 function readTitle(property: NotionPageProperty | undefined) {
