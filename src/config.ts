@@ -27,6 +27,8 @@ export type Config = {
   workspaceDir: string;
   reviewArtifactDir: string;
   defaultValidationCommands: string[];
+  agentCommand: string[];
+  agentTimeoutMs: number;
   allowPush: boolean;
   watchIntervalSec?: number;
   watchBackoffMaxSec: number;
@@ -56,6 +58,8 @@ const argSpec: ParseArgsConfig["options"] = {
   workspace: { type: "string" },
   "review-dir": { type: "string" },
   "default-validation": { type: "string" },
+  "agent-command": { type: "string" },
+  "agent-timeout-ms": { type: "string" },
   "allow-push": { type: "boolean" },
   watch: { type: "string" },
   once: { type: "boolean" },
@@ -135,6 +139,14 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
   const defaultValidationRaw =
     pickString(values["default-validation"]) ?? env.DEFAULT_VALIDATION_COMMANDS ?? "";
   const defaultValidationCommands = splitCommands(defaultValidationRaw);
+  const agentCommandRaw =
+    pickString(values["agent-command"]) ??
+    (await readSecret(env, "AGENT_COMMAND_JSON")) ??
+    "";
+  const agentCommand = parseCommandJson(agentCommandRaw, "AGENT_COMMAND_JSON");
+  const agentTimeoutMs =
+    parseOptionalNumber(values["agent-timeout-ms"], env.AGENT_TIMEOUT_MS) ??
+    15 * 60 * 1000;
 
   const allowPush = parseBool(values["allow-push"], env.ALLOW_PUSH, false);
   const dryRun = parseBool(values["dry-run"], undefined, false);
@@ -189,6 +201,8 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
     workspaceDir,
     reviewArtifactDir,
     defaultValidationCommands,
+    agentCommand,
+    agentTimeoutMs,
     allowPush,
     watchIntervalSec,
     watchBackoffMaxSec,
@@ -241,6 +255,8 @@ function makeHelpConfig(input: { command: "help" | "version"; helpTopic?: string
     workspaceDir: "/workspace",
     reviewArtifactDir: ".notion-orchestrator/runs",
     defaultValidationCommands: [],
+    agentCommand: [],
+    agentTimeoutMs: 15 * 60 * 1000,
     allowPush: false,
     watchBackoffMaxSec: 300,
     dryRun: false,
@@ -294,6 +310,30 @@ function splitCommands(raw: string): string[] {
     .split(/\n|,/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function parseCommandJson(raw: string, label: string): string[] {
+  if (!raw) {
+    return [];
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`${label} must be a JSON array of strings: ${message}`);
+  }
+
+  if (
+    !Array.isArray(parsed) ||
+    parsed.length === 0 ||
+    !parsed.every((item) => typeof item === "string" && item.length > 0)
+  ) {
+    throw new Error(`${label} must be a non-empty JSON array of strings.`);
+  }
+
+  return parsed;
 }
 
 async function readSecret(env: NodeJS.ProcessEnv, key: string): Promise<string | undefined> {

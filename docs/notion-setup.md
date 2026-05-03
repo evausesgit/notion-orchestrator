@@ -33,7 +33,7 @@ These 7 columns drive the runner's behavior. Without them, the task is rejected.
 | Acceptance Criteria | Text | `File docs/hello.md exists` |
 | Execution Mode | Select — options: `manual`, `agent` | `agent` |
 | Files To Touch | Text (newline- or comma-separated relative paths) | `docs/hello.md` |
-| Implementation Brief | Text | `Body of the markdown section the runner will write.` |
+| Implementation Brief | Text | `Instructions passed to the configured agent command.` |
 
 ### Columns YOU fill in (optional — for filtering and customization)
 

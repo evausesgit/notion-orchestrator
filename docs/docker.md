@@ -10,11 +10,14 @@ docker run --rm \
   -e NOTION_DATA_SOURCE_ID=... \
   -e GIT_REPO_URL=https://github.com/you/sandbox.git \
   -e GIT_TOKEN=ghp_xxx \
+  -e AGENT_COMMAND_JSON='["codex","exec","-"]' \
   -e ALLOW_PUSH=true \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 run
 ```
 
 Each `docker run` re-clones the target repo into the container's `/workspace/repo`, executes one ready task, then exits.
+
+`AGENT_COMMAND_JSON` must point to a command available inside the container. The base image does not install a coding agent CLI; build a custom image if you want to run Codex, Claude, or another agent inside Docker.
 
 ## Daemon
 
@@ -22,6 +25,7 @@ Each `docker run` re-clones the target repo into the container's `/workspace/rep
 docker run -d --name notion-orchestrator \
   -e NOTION_TOKEN=... -e NOTION_DATA_SOURCE_ID=... \
   -e GIT_REPO_URL=... -e GIT_TOKEN=... \
+  -e AGENT_COMMAND_JSON='["codex","exec","-"]' \
   -e ALLOW_PUSH=true \
   -v notion-orch-workspace:/workspace \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 run --watch 60

@@ -39,6 +39,8 @@ For SSH URLs, mount `~/.ssh` into the container yourself; the runner does not ma
 | `WORKSPACE_DIR` | `--workspace` | `/workspace` | Mounted volume root; runner clones into `<dir>/repo` |
 | `REVIEW_ARTIFACT_DIR` | `--review-dir` | `.notion-orchestrator/runs` | Relative to the cloned repo |
 | `DEFAULT_VALIDATION_COMMANDS` | `--default-validation` | empty | Used when a task supplies no `Validation Commands` |
+| `AGENT_COMMAND_JSON` (`_FILE`) | `--agent-command` | empty | JSON array command for `Execution Mode = agent`; receives the prompt on stdin and via `NOTION_ORCHESTRATOR_PROMPT_FILE` |
+| `AGENT_TIMEOUT_MS` | `--agent-timeout-ms` | `900000` | Agent command timeout in milliseconds |
 | `ALLOW_PUSH` | `--allow-push` | `false` | Master switch for committing and pushing |
 
 ## Run-mode flags
@@ -75,4 +77,4 @@ docker run --secret notion-token \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 doctor
 ```
 
-Supported keys: `NOTION_TOKEN_FILE`, `NOTION_PROPS_JSON_FILE`, `GIT_TOKEN_FILE`.
+Supported keys: `NOTION_TOKEN_FILE`, `NOTION_PROPS_JSON_FILE`, `GIT_TOKEN_FILE`, `AGENT_COMMAND_JSON_FILE`.

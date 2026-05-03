@@ -15,11 +15,13 @@
 - Walk outside the cloned repository (`..` or absolute paths in `Files To Touch` are rejected).
 - Force-push or rewrite history. `commitAndPush` performs a fast-forward `push origin HEAD:<branch>` and will fail if the remote diverged.
 - Log secrets. The logger redacts known tokens before writing.
+- Pass `NOTION_TOKEN`, `GIT_TOKEN`, or their `_FILE` variants to the configured agent subprocess.
 
 ## Token handling
 
 - `NOTION_TOKEN` and `GIT_TOKEN` may be passed as env vars or via `_FILE` variants reading from disk (Docker / Kubernetes secrets).
 - The credential helper writes `~/.git-credentials` with mode `0600` and configures `git credential.helper store`. The token is **not** persisted in `.git/config`'s remote URL.
+- The agent subprocess receives a sanitized environment. It gets the repo path and prompt path, but not the Notion or Git write tokens.
 - The container runs as the non-root user `runner`. The home directory `/home/runner` is the only place tokens are persisted on disk.
 
 ## Recommendations

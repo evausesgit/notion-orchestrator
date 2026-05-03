@@ -59,6 +59,18 @@ Go to <https://github.com/settings/personal-access-tokens/new>, create a fine-gr
 
 Save the `github_pat_…` token — this is `GIT_TOKEN`.
 
+### Step 3.5 — Configure the agent command
+
+Rows with `Execution Mode = agent` require an agent command. The runner launches this command inside the cloned repo, passes the task prompt on stdin, and also writes the prompt path to `NOTION_ORCHESTRATOR_PROMPT_FILE`.
+
+For example, when running locally with a Codex CLI available on `PATH`:
+
+```bash
+export AGENT_COMMAND_JSON='["codex","exec","-"]'
+```
+
+When running the Docker image, the configured command must exist inside the image. Use a custom image if your agent CLI is not part of the base `notion-orchestrator` image.
+
 ### Step 4 — Run the doctor
 
 > **Note**: until version `v0.1.0` is tagged, the image is not yet on `ghcr.io`. See **Building locally** below for the dev path. Once `v0.1.0` ships, the image is at `ghcr.io/evausesgit/notion-orchestrator:0.1.0`.
@@ -90,6 +102,7 @@ docker run --rm \
   -e NOTION_DATA_SOURCE_ID="..." \
   -e GIT_REPO_URL="https://github.com/your-name/notion-orch-sandbox.git" \
   -e GIT_TOKEN="github_pat_xxx" \
+  -e AGENT_COMMAND_JSON='["codex","exec","-"]' \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 run
 ```
 
@@ -113,6 +126,7 @@ Reset the task back to `Status = Todo` in Notion, then re-run with `ALLOW_PUSH=t
 docker run --rm \
   -e NOTION_TOKEN="..." -e NOTION_DATA_SOURCE_ID="..." \
   -e GIT_REPO_URL="..." -e GIT_TOKEN="..." \
+  -e AGENT_COMMAND_JSON='["codex","exec","-"]' \
   -e ALLOW_PUSH=true \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 run
 ```
@@ -144,6 +158,7 @@ For unattended operation, run as a daemon:
 docker run -d --name notion-orchestrator \
   -e NOTION_TOKEN="..." -e NOTION_DATA_SOURCE_ID="..." \
   -e GIT_REPO_URL="..." -e GIT_TOKEN="..." \
+  -e AGENT_COMMAND_JSON='["codex","exec","-"]' \
   -e ALLOW_PUSH=true \
   -v notion-orch-workspace:/workspace \
   ghcr.io/evausesgit/notion-orchestrator:0.1.0 run --watch 60
@@ -168,7 +183,7 @@ Full configuration reference: [`docs/configuration.md`](docs/configuration.md).
 
 ## What gets written to your repo
 
-For an `Execution Mode = agent` task: the runner appends a `## <ID> Execution` section to each path listed in `Files To Touch`, using the `Implementation Brief` as the body. Creates the file if missing.
+For an `Execution Mode = agent` task: the runner launches the command configured by `AGENT_COMMAND_JSON` inside the cloned repo. The command receives a task prompt on stdin and can also read the same prompt from `NOTION_ORCHESTRATOR_PROMPT_FILE`. The prompt includes the task title, acceptance criteria, implementation brief, repo areas, and files to touch.
 
 The runner refuses to write to forbidden paths: `.git/`, `.env*`, `.ssh/`, the review artifact directory itself, or anything outside the cloned repo.
 
@@ -190,7 +205,7 @@ A review artifact is written to `.notion-orchestrator/runs/<run-id>.md` inside t
 
 **The runner says "skipped"** — the task has no `Execution Mode` set, or it is set to `manual`. Set it to `agent`.
 
-**The runner says "blocked"** — the task is missing `Files To Touch`, `Implementation Brief`, or `Acceptance Criteria`, or `Files To Touch` includes a forbidden path. Check the `Agent Output` field in Notion for the exact reason.
+**The runner says "blocked"** — the task is missing `Files To Touch`, `Implementation Brief`, or `Acceptance Criteria`, `AGENT_COMMAND_JSON` is not configured, or `Files To Touch` includes a forbidden path. Check the `Agent Output` field in Notion for the exact reason.
 
 ## Safety
 

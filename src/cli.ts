@@ -50,6 +50,8 @@ Common options:
   --review-dir <path>             Review artifact dir relative to repo
                                    (default: .notion-orchestrator/runs).
   --default-validation <cmds>     Comma- or newline-separated fallback validation commands.
+  --agent-command <json>          JSON array command for Execution Mode = agent.
+  --agent-timeout-ms <ms>         Agent command timeout (default: 900000).
   --allow-push                    Permit committing and pushing. Default: dry path only.
 
 Run-mode:
@@ -215,6 +217,8 @@ async function runCommand(
   const executor = createExecutor({
     repoRoot: workspace.repoDir,
     reviewArtifactDir: config.reviewArtifactDir,
+    agentCommand: config.agentCommand,
+    agentTimeoutMs: config.agentTimeoutMs,
   });
 
   const runner = new TaskRunner(

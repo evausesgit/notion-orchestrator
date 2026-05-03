@@ -19,6 +19,13 @@ export {
   type TaskRunnerConfig,
 } from "./runner.js";
 export {
+  buildAgentPrompt,
+  runAgentCommand,
+  type AgentCommandConfig,
+  type AgentCommandResult,
+} from "./agent-executor.js";
+
+export {
   createExecutor,
   ensureFile,
   ensureSection,

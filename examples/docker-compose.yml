@@ -8,6 +8,7 @@ services:
       GIT_REPO_URL: ${GIT_REPO_URL}
       GIT_TOKEN: ${GIT_TOKEN}
       GIT_BRANCH: main
+      AGENT_COMMAND_JSON: ${AGENT_COMMAND_JSON}
       ALLOW_PUSH: "true"
       LOG_FORMAT: json
       LOG_LEVEL: info

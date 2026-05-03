@@ -3,6 +3,7 @@ import path from "node:path";
 import { listChangedFiles as listGitChangedFiles } from "./git-ops.js";
 import type { TaskExecutionResult } from "./runner.js";
 import type { OrchestrationTask } from "./task-types.js";
+import { runAgentCommand, type AgentCommandConfig } from "./agent-executor.js";
 
 const FORBIDDEN_PATH_PREFIXES = [".git/", ".env", ".ssh/", ".notion-orchestrator/"];
 const FORBIDDEN_PATH_EXACT = new Set([".git", ".env", ".ssh"]);
@@ -11,6 +12,8 @@ export type ExecutorConfig = {
   repoRoot: string;
   reviewArtifactDir: string;
   reviewBaseUrl?: string;
+  agentCommand?: string[];
+  agentTimeoutMs?: number;
 };
 
 export function createExecutor(config: ExecutorConfig) {
@@ -43,15 +46,15 @@ export function createExecutor(config: ExecutorConfig) {
 
     const changedFilesBefore = await listGitChangedFiles(config.repoRoot);
 
-    for (const relativeFile of task.filesToTouch) {
-      const absoluteFile = path.join(config.repoRoot, relativeFile);
-      await ensureFile(
-        absoluteFile,
-        [`# ${task.title}`, "", task.implementationBrief].join("\n"),
-      );
-
-      const sectionHeading = `## ${task.taskId} Execution`;
-      await ensureSection(absoluteFile, sectionHeading, task.implementationBrief);
+    let agentResult: Awaited<ReturnType<typeof runAgentCommand>>;
+    try {
+      agentResult = await runAgentCommand(task, agentConfig(config));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        outcome: "blocked",
+        summary: `Execution for ${task.taskId} was blocked by the agent command: ${message}`,
+      };
     }
 
     const changedFilesAfter = await listGitChangedFiles(config.repoRoot);
@@ -74,12 +77,29 @@ export function createExecutor(config: ExecutorConfig) {
         newChangedFiles.length > 0
           ? `Changed files: ${newChangedFiles.join(", ")}.`
           : "The executor was idempotent and did not introduce a new diff.",
+        summarizeAgentOutput(agentResult.stdout, agentResult.stderr),
         `Review artifact: ${path.relative(config.repoRoot, reviewArtifactPath)}.`,
       ].join(" "),
       changedFiles: newChangedFiles,
       link: config.reviewBaseUrl,
     };
   };
+}
+
+function agentConfig(config: ExecutorConfig): AgentCommandConfig {
+  return {
+    repoRoot: config.repoRoot,
+    command: config.agentCommand ?? [],
+    timeoutMs: config.agentTimeoutMs ?? 15 * 60 * 1000,
+  };
+}
+
+function summarizeAgentOutput(stdout: string, stderr: string) {
+  const output = [stdout.trim(), stderr.trim()].filter(Boolean).join("\n");
+  if (!output) {
+    return "Agent produced no console output.";
+  }
+  return `Agent output: ${output.slice(0, 1200)}`;
 }
 
 export function isSafeRelativePath(target: string) {

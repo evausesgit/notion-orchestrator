@@ -1,0 +1,41 @@
+import { mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import { loadConfig } from "../src/config.js";
+
+const baseEnv = {
+  NOTION_TOKEN: "secret_test",
+  NOTION_DATA_SOURCE_ID: "0c2bda0d-2ad3-4d2c-8a67-8c1165a1d72c",
+  GIT_REPO_URL: "https://github.com/example/repo.git",
+};
+
+describe("loadConfig", () => {
+  it("parses AGENT_COMMAND_JSON", async () => {
+    const config = await loadConfig({
+      argv: ["run"],
+      env: {
+        ...baseEnv,
+        AGENT_COMMAND_JSON: '["codex","exec","-"]',
+      },
+    });
+
+    expect(config.agentCommand).toEqual(["codex", "exec", "-"]);
+  });
+
+  it("reads AGENT_COMMAND_JSON_FILE", async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), "no-config-"));
+    const file = path.join(dir, "agent-command.json");
+    await writeFile(file, '["node","agent.js"]', "utf8");
+
+    const config = await loadConfig({
+      argv: ["run"],
+      env: {
+        ...baseEnv,
+        AGENT_COMMAND_JSON_FILE: file,
+      },
+    });
+
+    expect(config.agentCommand).toEqual(["node", "agent.js"]);
+  });
+});
