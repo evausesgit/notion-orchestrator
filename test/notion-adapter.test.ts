@@ -64,10 +64,46 @@ describe("InMemoryNotionAdapter", () => {
           validationCommands: [],
         },
       },
+      {
+        pageId: "p4",
+        properties: {
+          taskId: "T-4",
+          title: "Done blocker",
+          status: "Done",
+          priority: "P1",
+          type: "Task",
+          sprint: "Sprint A",
+          repoArea: [],
+          blockedBy: [],
+          acceptanceCriteria: "ok",
+          agentOutput: "",
+          executionMode: "agent",
+          filesToTouch: [],
+          validationCommands: [],
+        },
+      },
+      {
+        pageId: "p5",
+        properties: {
+          taskId: "T-5",
+          title: "Ready after blocker",
+          status: "Todo",
+          priority: "P1",
+          type: "Task",
+          sprint: "Sprint A",
+          repoArea: [],
+          blockedBy: ["p4"],
+          acceptanceCriteria: "ok",
+          agentOutput: "",
+          executionMode: "agent",
+          filesToTouch: [],
+          validationCommands: [],
+        },
+      },
     ]);
 
     const ready = await adapter.listTasks({ sprint: "Sprint A", onlyReady: true });
-    expect(ready.map((task) => task.taskId)).toEqual(["T-1"]);
+    expect(ready.map((task) => task.taskId)).toEqual(["T-1", "T-5"]);
   });
 
   it("updates status, run id, and writeback fields", async () => {

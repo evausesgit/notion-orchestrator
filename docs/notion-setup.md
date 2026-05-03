@@ -138,7 +138,7 @@ The runner picks a task when:
 - `Status` matches the configured ready status (default `Todo`)
 - `Execution Mode` is `agent`
 - `Sprint` matches `--sprint`/`SPRINT_FILTER` (or no filter is set)
-- `Blocked By` is empty or all blockers are themselves resolved
+- `Blocked By` is empty or all related blocker tasks are `Done`
 - `Acceptance Criteria` is non-empty
 
 After execution it transitions:

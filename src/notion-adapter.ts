@@ -75,15 +75,17 @@ export class InMemoryNotionAdapter implements TaskTrackerAdapter {
 
   async listTasks(options?: PickTaskOptions): Promise<OrchestrationTask[]> {
     const readyStatus = options?.readyStatus ?? "Todo";
+    const allTasks = [...this.tasks.values()];
+    const tasksByPageId = new Map(allTasks.map((task) => [task.pageId, task]));
 
-    return [...this.tasks.values()]
+    return allTasks
       .filter((task) => {
         if (options?.sprint && task.sprint !== options.sprint) {
           return false;
         }
 
         if (options?.onlyReady) {
-          return isReadyForAutomation(task, readyStatus);
+          return isReadyForAutomation(task, readyStatus, tasksByPageId);
         }
 
         return true;
@@ -147,26 +149,28 @@ export class NotionApiTaskTrackerAdapter implements TaskTrackerAdapter {
         },
       );
 
-      for (const page of response.results) {
-        const task = mapNotionPageToTask(page, this.propertyMap);
-
-        if (options?.sprint && task.sprint !== options.sprint) {
-          continue;
-        }
-
-        if (options?.onlyReady) {
-          if (!isReadyForAutomation(task, readyStatus)) {
-            continue;
-          }
-        }
-
-        tasks.push(task);
-      }
+      tasks.push(
+        ...response.results.map((page) => mapNotionPageToTask(page, this.propertyMap)),
+      );
 
       cursor = response.has_more ? response.next_cursor ?? undefined : undefined;
     } while (cursor);
 
-    return tasks.sort(compareTasks);
+    const tasksByPageId = new Map(tasks.map((task) => [task.pageId, task]));
+
+    return tasks
+      .filter((task) => {
+        if (options?.sprint && task.sprint !== options.sprint) {
+          return false;
+        }
+
+        if (options?.onlyReady) {
+          return isReadyForAutomation(task, readyStatus, tasksByPageId);
+        }
+
+        return true;
+      })
+      .sort(compareTasks);
   }
 
   async getTask(taskId: string): Promise<OrchestrationTask | null> {
@@ -308,10 +312,14 @@ export function compareTasks(left: OrchestrationTask, right: OrchestrationTask) 
   return left.taskId.localeCompare(right.taskId);
 }
 
-function isReadyForAutomation(task: OrchestrationTask, readyStatus: OrchestrationStatus) {
+function isReadyForAutomation(
+  task: OrchestrationTask,
+  readyStatus: OrchestrationStatus,
+  tasksByPageId: Map<string, OrchestrationTask>,
+) {
   return (
     task.status === readyStatus &&
-    task.blockedBy.length === 0 &&
+    task.blockedBy.every((pageId) => tasksByPageId.get(pageId)?.status === "Done") &&
     task.executionMode === "agent"
   );
 }
