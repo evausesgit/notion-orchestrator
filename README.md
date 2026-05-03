@@ -209,7 +209,7 @@ A review artifact is written to `.notion-orchestrator/runs/<run-id>.md` inside t
 
 **Task stuck in `In Progress`** — the runner crashed mid-execution. Manually flip the task back to `Todo` in Notion. The runner intentionally never re-picks `In Progress` rows to avoid duplicate work.
 
-**The runner says "skipped"** — the task has no `Execution Mode` set, or it is set to `manual`. Set it to `agent`.
+**The runner says "No ready tasks"** — only tasks with `Status = Todo`, no blockers, and `Execution Mode = agent` are picked. Manual tasks can remain in `Todo` without being selected by watch mode.
 
 **The runner says "blocked"** — the task is missing `Files To Touch`, `Implementation Brief`, or `Acceptance Criteria`, `AGENT_COMMAND_JSON` is not configured, `Files To Touch` includes a forbidden path, or validation still fails after `AGENT_REPAIR_ATTEMPTS`. Check the `Agent Output` field in Notion for the exact reason.
 

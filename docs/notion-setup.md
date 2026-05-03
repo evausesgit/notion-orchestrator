@@ -136,6 +136,7 @@ Unknown role keys are rejected at startup.
 The runner picks a task when:
 
 - `Status` matches the configured ready status (default `Todo`)
+- `Execution Mode` is `agent`
 - `Sprint` matches `--sprint`/`SPRINT_FILTER` (or no filter is set)
 - `Blocked By` is empty or all blockers are themselves resolved
 - `Acceptance Criteria` is non-empty
@@ -145,4 +146,4 @@ After execution it transitions:
 - `Done` if a commit was pushed
 - `In Review` if the change was produced but pushing is disabled
 - `Blocked` if execution failed, validation still fails after `AGENT_REPAIR_ATTEMPTS`, or the task is malformed
-- `Todo` if `Execution Mode` is `manual` (deliberately skipped)
+- `Todo` remains untouched for `Execution Mode = manual`; manual tasks are ignored by ready-task selection

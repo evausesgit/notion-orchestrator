@@ -83,7 +83,7 @@ export class InMemoryNotionAdapter implements TaskTrackerAdapter {
         }
 
         if (options?.onlyReady) {
-          return task.status === readyStatus && task.blockedBy.length === 0;
+          return isReadyForAutomation(task, readyStatus);
         }
 
         return true;
@@ -155,7 +155,7 @@ export class NotionApiTaskTrackerAdapter implements TaskTrackerAdapter {
         }
 
         if (options?.onlyReady) {
-          if (task.status !== readyStatus || task.blockedBy.length > 0) {
+          if (!isReadyForAutomation(task, readyStatus)) {
             continue;
           }
         }
@@ -306,6 +306,14 @@ export function compareTasks(left: OrchestrationTask, right: OrchestrationTask) 
   }
 
   return left.taskId.localeCompare(right.taskId);
+}
+
+function isReadyForAutomation(task: OrchestrationTask, readyStatus: OrchestrationStatus) {
+  return (
+    task.status === readyStatus &&
+    task.blockedBy.length === 0 &&
+    task.executionMode === "agent"
+  );
 }
 
 export function normalizeExecutionMode(

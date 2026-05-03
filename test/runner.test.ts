@@ -17,6 +17,7 @@ function seedAdapter() {
         blockedBy: [],
         acceptanceCriteria: "ok",
         agentOutput: "",
+        executionMode: "agent",
         filesToTouch: [],
         validationCommands: [],
       },
