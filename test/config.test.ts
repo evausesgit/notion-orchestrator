@@ -52,4 +52,24 @@ describe("loadConfig", () => {
 
     expect(config.agentRepairAttempts).toBe(3);
   });
+
+  it("parses startup tmux session for watch mode", async () => {
+    const config = await loadConfig({
+      argv: ["run", "--watch", "60", "--startup-tmux-session", "notion-orch-msa-watch"],
+      env: baseEnv,
+    });
+
+    expect(config.watchIntervalSec).toBe(60);
+    expect(config.startupTmuxSession).toBe("notion-orch-msa-watch");
+  });
+
+  it("parses multiple ready statuses", async () => {
+    const config = await loadConfig({
+      argv: ["run", "--ready-status", "Todo,Blocked"],
+      env: baseEnv,
+    });
+
+    expect(config.readyStatus).toBe("Todo");
+    expect(config.readyStatuses).toEqual(["Todo", "Blocked"]);
+  });
 });

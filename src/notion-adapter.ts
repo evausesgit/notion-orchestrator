@@ -74,7 +74,7 @@ export class InMemoryNotionAdapter implements TaskTrackerAdapter {
   }
 
   async listTasks(options?: PickTaskOptions): Promise<OrchestrationTask[]> {
-    const readyStatus = options?.readyStatus ?? "Todo";
+    const readyStatuses = options?.readyStatuses ?? [options?.readyStatus ?? "Todo"];
     const allTasks = [...this.tasks.values()];
     const tasksByPageId = new Map(allTasks.map((task) => [task.pageId, task]));
 
@@ -85,7 +85,7 @@ export class InMemoryNotionAdapter implements TaskTrackerAdapter {
         }
 
         if (options?.onlyReady) {
-          return isReadyForAutomation(task, readyStatus, tasksByPageId);
+          return isReadyForAutomation(task, readyStatuses, tasksByPageId);
         }
 
         return true;
@@ -134,7 +134,7 @@ export class NotionApiTaskTrackerAdapter implements TaskTrackerAdapter {
 
   async listTasks(options?: PickTaskOptions): Promise<OrchestrationTask[]> {
     const tasks: OrchestrationTask[] = [];
-    const readyStatus = options?.readyStatus ?? "Todo";
+    const readyStatuses = options?.readyStatuses ?? [options?.readyStatus ?? "Todo"];
     let cursor: string | undefined;
 
     do {
@@ -165,7 +165,7 @@ export class NotionApiTaskTrackerAdapter implements TaskTrackerAdapter {
         }
 
         if (options?.onlyReady) {
-          return isReadyForAutomation(task, readyStatus, tasksByPageId);
+          return isReadyForAutomation(task, readyStatuses, tasksByPageId);
         }
 
         return true;
@@ -314,11 +314,11 @@ export function compareTasks(left: OrchestrationTask, right: OrchestrationTask) 
 
 function isReadyForAutomation(
   task: OrchestrationTask,
-  readyStatus: OrchestrationStatus,
+  readyStatuses: OrchestrationStatus[],
   tasksByPageId: Map<string, OrchestrationTask>,
 ) {
   return (
-    task.status === readyStatus &&
+    readyStatuses.includes(task.status) &&
     task.blockedBy.every((pageId) => tasksByPageId.get(pageId)?.status === "Done") &&
     task.executionMode === "agent"
   );

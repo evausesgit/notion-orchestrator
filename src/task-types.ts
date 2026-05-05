@@ -62,6 +62,7 @@ export type TaskTransition = {
 export type PickTaskOptions = {
   sprint?: string;
   readyStatus?: OrchestrationStatus;
+  readyStatuses?: OrchestrationStatus[];
   onlyReady?: boolean;
 };
 

@@ -72,6 +72,40 @@ describe("TaskRunner", () => {
     }
   });
 
+  it("can retry Blocked tasks when configured as ready", async () => {
+    const adapter = new InMemoryNotionAdapter([
+      {
+        pageId: "p1",
+        properties: {
+          taskId: "T-1",
+          title: "Retry me",
+          status: "Blocked",
+          priority: "P1",
+          type: "Task",
+          sprint: "Sprint A",
+          repoArea: [],
+          blockedBy: [],
+          acceptanceCriteria: "ok",
+          agentOutput: "",
+          executionMode: "agent",
+          filesToTouch: [],
+          validationCommands: [],
+        },
+      },
+    ]);
+    const runner = new TaskRunner(
+      adapter,
+      { agentName: "test", readyStatuses: ["Todo", "Blocked"] },
+      async () => ({ outcome: "in_review", summary: "retried" }),
+    );
+
+    const outcome = await runner.runNextReadyTask();
+    expect(outcome.kind).toBe("ran");
+    if (outcome.kind === "ran") {
+      expect(outcome.task.status).toBe("In Review");
+    }
+  });
+
   it("runUntilIdle stops when adapter empties", async () => {
     const adapter = seedAdapter();
     let calls = 0;

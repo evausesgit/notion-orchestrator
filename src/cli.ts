@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { loadConfig, type Config } from "./config.js";
 import { createLogger, type Logger } from "./logger.js";
@@ -21,6 +23,8 @@ import { setupWorkspace } from "./workspace.js";
 import { watch } from "./watch.js";
 import type { OrchestrationTask } from "./task-types.js";
 
+const execFileAsync = promisify(execFile);
+
 const HELP = `notion-orchestrator — pick ready tasks from Notion and turn them into git commits.
 
 Usage:
@@ -40,7 +44,7 @@ Common options:
   --notion-props <json>           Override property names. Example:
                                    '{"taskId":"Key","blockedBy":"Depends On"}'.
   --sprint <name>                 Filter by Sprint property (default: no filter).
-  --ready-status <name>           Status considered ready (default: Todo).
+  --ready-status <name[,name]>    Statuses considered ready (default: Todo).
   --agent-name <name>             Written into Last Updated By Agent.
 
   --repo <url>                    Target git URL (or GIT_REPO_URL).
@@ -62,6 +66,7 @@ Run-mode:
   --watch <seconds>               Switch to daemon mode at the given polling interval.
   --max-iterations <n>            Cap watch iterations (testing/CI).
   --watch-backoff-max <seconds>   Backoff cap on errors (default 300).
+  --startup-tmux-session <name>   Kill a stale tmux session before watch starts.
   --dry-run                       Skip Notion writeback and git push.
   --json                          Machine-readable output for list/doctor.
 
@@ -126,6 +131,7 @@ async function listCommand(
   const tasks = await tracker.listTasks({
     sprint: config.sprintFilter || undefined,
     readyStatus: pickReadyStatus(config),
+    readyStatuses: pickReadyStatuses(config),
     onlyReady: true,
   });
 
@@ -205,6 +211,10 @@ async function runCommand(
   tracker: NotionApiTaskTrackerAdapter,
   logger: Logger,
 ) {
+  if (config.watchIntervalSec !== undefined && config.startupTmuxSession) {
+    await cleanupStartupTmuxSession(config.startupTmuxSession, logger);
+  }
+
   const workspace = await setupWorkspace(
     {
       workspaceDir: config.workspaceDir,
@@ -231,6 +241,7 @@ async function runCommand(
       agentName: config.agentName,
       sprintFilter: config.sprintFilter || undefined,
       readyStatus: pickReadyStatus(config),
+      readyStatuses: pickReadyStatuses(config),
     },
     async (task, runId) => {
       try {
@@ -380,6 +391,42 @@ async function runCommand(
   }
 }
 
+async function cleanupStartupTmuxSession(sessionName: string, logger: Logger) {
+  const currentSession = await getCurrentTmuxSession();
+
+  if (currentSession === sessionName) {
+    logger.warn(
+      `startup tmux cleanup skipped for ${sessionName}: refusing to kill the current session.`,
+    );
+    return;
+  }
+
+  try {
+    await execFileAsync("tmux", ["kill-session", "-t", sessionName]);
+    logger.info(`startup tmux cleanup: stopped stale session ${sessionName}`);
+  } catch (error) {
+    const execError = error as NodeJS.ErrnoException & {
+      code?: string | number;
+      stderr?: string;
+    };
+    const detail = execError.stderr?.trim() || execError.message;
+    logger.debug(`startup tmux cleanup: no session stopped (${detail})`);
+  }
+}
+
+async function getCurrentTmuxSession(): Promise<string | undefined> {
+  if (!process.env.TMUX) {
+    return undefined;
+  }
+
+  try {
+    const { stdout } = await execFileAsync("tmux", ["display-message", "-p", "#S"]);
+    return stdout.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function pickReadyStatus(config: Config) {
   return config.readyStatus as
     | "Inbox"
@@ -388,6 +435,19 @@ function pickReadyStatus(config: Config) {
     | "Blocked"
     | "In Review"
     | "Done";
+}
+
+function pickReadyStatuses(config: Config) {
+  return config.readyStatuses.map(
+    (status) =>
+      status as
+        | "Inbox"
+        | "Todo"
+        | "In Progress"
+        | "Blocked"
+        | "In Review"
+        | "Done",
+  );
 }
 
 async function runValidationWithRepairs(input: {

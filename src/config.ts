@@ -17,6 +17,7 @@ export type Config = {
   notionPropertyMap: NotionPropertyMap;
   sprintFilter: string;
   readyStatus: string;
+  readyStatuses: string[];
   agentName: string;
   gitRepoUrl: string;
   gitBranch: string;
@@ -33,6 +34,7 @@ export type Config = {
   allowPush: boolean;
   watchIntervalSec?: number;
   watchBackoffMaxSec: number;
+  startupTmuxSession?: string;
   maxIterations?: number;
   dryRun: boolean;
   json: boolean;
@@ -67,6 +69,7 @@ const argSpec: ParseArgsConfig["options"] = {
   once: { type: "boolean" },
   "max-iterations": { type: "string" },
   "watch-backoff-max": { type: "string" },
+  "startup-tmux-session": { type: "string" },
   "dry-run": { type: "boolean" },
   json: { type: "boolean" },
   "log-format": { type: "string" },
@@ -116,7 +119,10 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
     : { ...defaultPropertyMap };
 
   const sprintFilter = pickString(values.sprint) ?? env.SPRINT_FILTER ?? "";
-  const readyStatus = pickString(values["ready-status"]) ?? env.READY_STATUS ?? "Todo";
+  const readyStatusRaw =
+    pickString(values["ready-status"]) ?? env.READY_STATUS ?? env.READY_STATUSES ?? "Todo";
+  const readyStatuses = splitCommands(readyStatusRaw);
+  const readyStatus = readyStatuses[0] ?? "Todo";
   const agentName =
     pickString(values["agent-name"]) ?? env.AGENT_NAME ?? "notion-orchestrator";
 
@@ -163,6 +169,8 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
   const maxIterations = parseOptionalNumber(values["max-iterations"], undefined);
   const watchBackoffMaxSec =
     parseOptionalNumber(values["watch-backoff-max"], env.WATCH_BACKOFF_MAX) ?? 300;
+  const startupTmuxSession =
+    pickString(values["startup-tmux-session"]) ?? env.STARTUP_TMUX_SESSION;
 
   const logFormat = (pickString(values["log-format"]) ?? env.LOG_FORMAT ?? "text") as LogFormat;
   const logLevel = (pickString(values["log-level"]) ?? env.LOG_LEVEL ?? "info") as LogLevel;
@@ -198,6 +206,7 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
     notionPropertyMap,
     sprintFilter,
     readyStatus,
+    readyStatuses,
     agentName,
     gitRepoUrl,
     gitBranch,
@@ -214,6 +223,7 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
     allowPush,
     watchIntervalSec,
     watchBackoffMaxSec,
+    startupTmuxSession,
     maxIterations,
     dryRun,
     json,
@@ -254,6 +264,7 @@ function makeHelpConfig(input: { command: "help" | "version"; helpTopic?: string
     notionPropertyMap: { ...defaultPropertyMap },
     sprintFilter: "",
     readyStatus: "Todo",
+    readyStatuses: ["Todo"],
     agentName: "notion-orchestrator",
     gitRepoUrl: "",
     gitBranch: "main",

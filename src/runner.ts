@@ -29,6 +29,7 @@ export type TaskRunnerConfig = {
   agentName: string;
   sprintFilter?: string;
   readyStatus?: OrchestrationStatus;
+  readyStatuses?: OrchestrationStatus[];
 };
 
 export type RunnerOutcome =
@@ -51,6 +52,7 @@ export class TaskRunner {
     const tasks = await this.tracker.listTasks({
       sprint: this.config.sprintFilter || undefined,
       readyStatus: this.config.readyStatus ?? "Todo",
+      readyStatuses: this.config.readyStatuses,
       onlyReady: true,
     });
 
