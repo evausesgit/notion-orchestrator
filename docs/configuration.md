@@ -36,6 +36,7 @@ For SSH URLs, mount `~/.ssh` into the container yourself; the runner does not ma
 
 | Env | Flag | Default | Notes |
 | --- | --- | --- | --- |
+| `OPENAI_API_KEY` | — | empty | Required when `AGENT_COMMAND_JSON` invokes the Codex CLI inside the container |
 | `WORKSPACE_DIR` | `--workspace` | `/workspace` | Mounted volume root; runner clones into `<dir>/repo` |
 | `REVIEW_ARTIFACT_DIR` | `--review-dir` | `.notion-orchestrator/runs` | Relative to the cloned repo |
 | `DEFAULT_VALIDATION_COMMANDS` | `--default-validation` | empty | Used when a task supplies no `Validation Commands` |

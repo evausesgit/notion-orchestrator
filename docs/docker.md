@@ -18,7 +18,7 @@ docker run --rm \
 
 Each `docker run` re-clones the target repo into the container's `/workspace/repo`, executes one ready task, then exits.
 
-`AGENT_COMMAND_JSON` must point to a command available inside the container. The base image does not install a coding agent CLI; build a custom image if you want to run Codex, Claude, or another agent inside Docker. `AGENT_REPAIR_ATTEMPTS` controls how many times the same command is rerun with validation failure context before the task is marked blocked.
+The base image installs the OpenAI Codex CLI, so you can use `AGENT_COMMAND_JSON='["codex","exec","-"]'` directly. Set `OPENAI_API_KEY` in the container environment so the CLI can authenticate. `AGENT_REPAIR_ATTEMPTS` controls how many times the same command is rerun with validation failure context before the task is marked blocked.
 
 ## Daemon
 
@@ -42,7 +42,7 @@ See [`examples/docker-compose.yml`](../examples/docker-compose.yml).
 ## Image internals
 
 - Base: `node:20-bookworm-slim`
-- Adds `git`, `ca-certificates`, `openssh-client`
+- Adds `git`, `ca-certificates`, `openssh-client`, `@openai/codex`
 - Non-root user `runner` (UID/GID 999 by default — exact value depends on base image)
 - `/workspace` declared as a volume
 - Exposes port `3000` for the web control panel

@@ -20,6 +20,8 @@ RUN apt-get update \
         git \
         ca-certificates \
         openssh-client \
+ && npm install -g @openai/codex \
+ && chmod +x /usr/local/lib/node_modules/@openai/codex/bin/codex.js \
  && rm -rf /var/lib/apt/lists/* \
  && groupadd -r runner \
  && useradd -r -g runner -m -d /home/runner runner \

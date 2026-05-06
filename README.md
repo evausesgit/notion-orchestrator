@@ -72,7 +72,7 @@ export AGENT_REPAIR_ATTEMPTS=2
 
 `AGENT_REPAIR_ATTEMPTS` controls how many times the orchestrator reruns the agent after validation fails. Each repair prompt includes the original task, the validation commands, the validation error, and a git diff summary.
 
-When running the Docker image, the configured command must exist inside the image. Use a custom image if your agent CLI is not part of the base `notion-orchestrator` image.
+The Docker image installs the OpenAI Codex CLI. If you use Codex in `AGENT_COMMAND_JSON`, also set `OPENAI_API_KEY` in the container environment.
 
 ### Step 4 — Run the doctor
 
