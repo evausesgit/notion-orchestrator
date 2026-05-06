@@ -21,6 +21,7 @@ import {
 } from "./git-ops.js";
 import { setupWorkspace } from "./workspace.js";
 import { watch } from "./watch.js";
+import { serveWebUi } from "./web.js";
 import type { OrchestrationTask } from "./task-types.js";
 
 const execFileAsync = promisify(execFile);
@@ -34,6 +35,7 @@ Commands:
   run         Execute one ready task and exit (default).
   list        List ready tasks without modifying anything.
   doctor      Validate config, ping Notion, ping git remote.
+  serve       Start the web control panel.
   version     Print the package version.
   help [cmd]  Show this help (or extended help for a command).
 
@@ -69,6 +71,8 @@ Run-mode:
   --startup-tmux-session <name>   Kill a stale tmux session before watch starts.
   --dry-run                       Skip Notion writeback and git push.
   --json                          Machine-readable output for list/doctor.
+  --port <port>                   Web UI port for serve (default: 3000).
+  --web-config <path>             Web UI config path (default: /workspace/orchestrator-config.json).
 
 Logging:
   --log-format <text|json>        Default: text.
@@ -77,6 +81,7 @@ Logging:
 Examples:
   notion-orchestrator doctor
   notion-orchestrator list --json
+  notion-orchestrator serve
   notion-orchestrator run --repo https://github.com/me/sandbox.git \\
     --git-token $GH_TOKEN --branch main
   notion-orchestrator run --watch 60 --allow-push
@@ -104,6 +109,15 @@ async function main() {
     },
     { agent: config.agentName, command: config.command },
   );
+
+  if (config.command === "serve") {
+    return serveWebUi({
+      env: process.env,
+      logger,
+      port: config.webPort,
+      configPath: config.webConfigPath || undefined,
+    });
+  }
 
   const tracker = new NotionApiTaskTrackerAdapter({
     token: config.notionToken,

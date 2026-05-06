@@ -175,6 +175,19 @@ The container polls every 60 seconds, with exponential backoff up to 5 minutes w
 A complete `docker-compose.yml` is in [`examples/docker-compose.yml`](examples/docker-compose.yml).
 A scheduled GitHub Actions workflow is in [`examples/github-actions-runner.yml`](examples/github-actions-runner.yml).
 
+## Web control panel
+
+The Docker image starts a small web UI by default:
+
+```bash
+docker run --rm -p 3000:3000 -v notion-orch-workspace:/workspace \
+  ghcr.io/evausesgit/notion-orchestrator:0.1.0
+```
+
+Open `http://localhost:3000` to save configuration, run `doctor`, run once, or start/stop watch mode. The UI stores configuration at `/workspace/orchestrator-config.json` by default, so mount a persistent volume at `/workspace`.
+
+For Coolify, use the Dockerfile build pack, expose port `3000`, keep a persistent volume mounted at `/workspace`, and let the default command run `serve`. You can still run the raw worker by overriding the command to `run --watch 60`.
+
 ## Commands reference
 
 | Command | Description |
@@ -182,6 +195,7 @@ A scheduled GitHub Actions workflow is in [`examples/github-actions-runner.yml`]
 | `run` (default) | Pick the next ready task, execute it. Add `--watch <seconds>` for daemon mode. |
 | `list` | Print the queue of ready tasks. Add `--json` for machine-readable output. |
 | `doctor` | Validate config, ping Notion, check the git remote URL is set. |
+| `serve` | Start the web control panel on `PORT` (`3000` by default). |
 | `version` | Print the package version. |
 | `help [command]` | Show extended help. |
 

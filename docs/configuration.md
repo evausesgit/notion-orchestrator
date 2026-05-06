@@ -63,6 +63,15 @@ For SSH URLs, mount `~/.ssh` into the container yourself; the runner does not ma
 
 The logger redacts any string equal to a known token before writing.
 
+## Web control panel
+
+| Env | Default | Notes |
+| --- | --- | --- |
+| `PORT` | `3000` | HTTP port for `notion-orchestrator serve` |
+| `WEB_CONFIG_PATH` | `/workspace/orchestrator-config.json` | File where the web UI stores runtime configuration |
+
+The web UI can start without Notion or git settings. It writes saved values to `WEB_CONFIG_PATH` with mode `0600`, then launches the existing CLI commands as child processes with those values injected into the environment.
+
 ## Precedence
 
 CLI flag > environment variable > built-in default.

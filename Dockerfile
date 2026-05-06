@@ -34,10 +34,15 @@ COPY --from=builder --chown=runner:runner /app/package.json ./package.json
 
 ENV NODE_ENV=production \
     LOG_FORMAT=json \
+    PORT=3000 \
     WORKSPACE_DIR=/workspace
 
+EXPOSE 3000
 VOLUME ["/workspace"]
 USER runner
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node /home/runner/app/dist/cli.js version >/dev/null || exit 1
+
 ENTRYPOINT ["node", "/home/runner/app/dist/cli.js"]
-CMD ["run"]
+CMD ["serve"]

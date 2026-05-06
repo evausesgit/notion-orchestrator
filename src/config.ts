@@ -7,7 +7,7 @@ import {
 import type { NotionPropertyMap } from "./task-types.js";
 import type { LogFormat, LogLevel } from "./logger.js";
 
-export type Command = "run" | "list" | "doctor" | "version" | "help";
+export type Command = "run" | "list" | "doctor" | "serve" | "version" | "help";
 
 export type Config = {
   command: Command;
@@ -38,6 +38,8 @@ export type Config = {
   maxIterations?: number;
   dryRun: boolean;
   json: boolean;
+  webPort: number;
+  webConfigPath: string;
   logFormat: LogFormat;
   logLevel: LogLevel;
   helpRequested: boolean;
@@ -72,6 +74,8 @@ const argSpec: ParseArgsConfig["options"] = {
   "startup-tmux-session": { type: "string" },
   "dry-run": { type: "boolean" },
   json: { type: "boolean" },
+  port: { type: "string" },
+  "web-config": { type: "string" },
   "log-format": { type: "string" },
   "log-level": { type: "string" },
   help: { type: "boolean", short: "h" },
@@ -164,6 +168,8 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
   const allowPush = parseBool(values["allow-push"], env.ALLOW_PUSH, false);
   const dryRun = parseBool(values["dry-run"], undefined, false);
   const json = parseBool(values.json, undefined, false);
+  const webPort = parseOptionalNumber(values.port, env.PORT) ?? 3000;
+  const webConfigPath = pickString(values["web-config"]) ?? env.WEB_CONFIG_PATH ?? "";
 
   const watchIntervalSec = parseOptionalNumber(values.watch, undefined);
   const maxIterations = parseOptionalNumber(values["max-iterations"], undefined);
@@ -175,7 +181,9 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
   const logFormat = (pickString(values["log-format"]) ?? env.LOG_FORMAT ?? "text") as LogFormat;
   const logLevel = (pickString(values["log-level"]) ?? env.LOG_LEVEL ?? "info") as LogLevel;
 
-  if (command !== "doctor" && command !== "list") {
+  if (command === "serve") {
+    // The web UI can start with an empty configuration and collect settings later.
+  } else if (command !== "doctor" && command !== "list") {
     if (!notionToken) {
       throw new Error("NOTION_TOKEN (or --notion-token) is required.");
     }
@@ -227,6 +235,8 @@ export async function loadConfig({ argv, env }: LoadConfigOptions): Promise<Conf
     maxIterations,
     dryRun,
     json,
+    webPort,
+    webConfigPath,
     logFormat,
     logLevel,
     helpRequested: false,
@@ -244,13 +254,14 @@ function pickCommand(positionals: string[], versionRequested: boolean): Command 
     candidate === "run" ||
     candidate === "list" ||
     candidate === "doctor" ||
+    candidate === "serve" ||
     candidate === "version" ||
     candidate === "help"
   ) {
     return candidate;
   }
 
-  throw new Error(`Unknown command: ${candidate}. Valid: run, list, doctor, version, help.`);
+  throw new Error(`Unknown command: ${candidate}. Valid: run, list, doctor, serve, version, help.`);
 }
 
 function makeHelpConfig(input: { command: "help" | "version"; helpTopic?: string }): Config {
@@ -281,6 +292,8 @@ function makeHelpConfig(input: { command: "help" | "version"; helpTopic?: string
     watchBackoffMaxSec: 300,
     dryRun: false,
     json: false,
+    webPort: 3000,
+    webConfigPath: "",
     logFormat: "text",
     logLevel: "info",
   };

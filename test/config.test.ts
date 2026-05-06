@@ -72,4 +72,19 @@ describe("loadConfig", () => {
     expect(config.readyStatus).toBe("Todo");
     expect(config.readyStatuses).toEqual(["Todo", "Blocked"]);
   });
+
+  it("allows serve without Notion or git settings", async () => {
+    const config = await loadConfig({
+      argv: ["serve", "--port", "3010", "--web-config", "/tmp/orchestrator.json"],
+      env: {
+        PORT: "3000",
+      },
+    });
+
+    expect(config.command).toBe("serve");
+    expect(config.notionToken).toBe("");
+    expect(config.gitRepoUrl).toBe("");
+    expect(config.webPort).toBe(3010);
+    expect(config.webConfigPath).toBe("/tmp/orchestrator.json");
+  });
 });

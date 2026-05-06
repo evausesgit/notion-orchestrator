@@ -45,8 +45,21 @@ See [`examples/docker-compose.yml`](../examples/docker-compose.yml).
 - Adds `git`, `ca-certificates`, `openssh-client`
 - Non-root user `runner` (UID/GID 999 by default — exact value depends on base image)
 - `/workspace` declared as a volume
+- Exposes port `3000` for the web control panel
 - ENTRYPOINT: `node /home/runner/app/dist/cli.js`
-- Default CMD: `run`
+- Default CMD: `serve`
+
+## Web control panel
+
+Running the image without a command starts the web UI:
+
+```bash
+docker run --rm -p 3000:3000 \
+  -v notion-orch-workspace:/workspace \
+  ghcr.io/evausesgit/notion-orchestrator:0.1.0
+```
+
+The UI stores its configuration in `/workspace/orchestrator-config.json` by default and can run `doctor`, run once, or start/stop `run --watch 60`.
 
 ## Bind-mounting a host directory
 
