@@ -139,11 +139,11 @@ The runner picks a task when:
 - `Execution Mode` is `agent`
 - `Sprint` matches `--sprint`/`SPRINT_FILTER` (or no filter is set)
 - `Blocked By` is empty or all related blocker tasks are `Done`
-- `Acceptance Criteria` is non-empty
+- `Acceptance Criteria`, `Implementation Brief`, and `Files To Touch` are optional; missing values are passed through to the agent prompt as generic fallback guidance
 
 After execution it transitions:
 
 - `Done` if a commit was pushed
 - `In Review` if the change was produced but pushing is disabled
-- `Blocked` if execution failed, validation still fails after `AGENT_REPAIR_ATTEMPTS`, or the task is malformed
+- `Blocked` if execution failed, `Files To Touch` contains a forbidden path, or validation still fails after `AGENT_REPAIR_ATTEMPTS`
 - `Todo` remains untouched for `Execution Mode = manual`; manual tasks are ignored by ready-task selection

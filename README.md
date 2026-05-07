@@ -225,7 +225,7 @@ A review artifact is written to `.notion-orchestrator/runs/<run-id>.md` inside t
 
 **The runner says "No ready tasks"** — only tasks with `Status = Todo`, no blockers, and `Execution Mode = agent` are picked. Manual tasks can remain in `Todo` without being selected by watch mode.
 
-**The runner says "blocked"** — the task is missing `Files To Touch`, `Implementation Brief`, or `Acceptance Criteria`, `AGENT_COMMAND_JSON` is not configured, `Files To Touch` includes a forbidden path, or validation still fails after `AGENT_REPAIR_ATTEMPTS`. Check the `Agent Output` field in Notion for the exact reason.
+**The runner says "blocked"** — `AGENT_COMMAND_JSON` is not configured, `Files To Touch` includes a forbidden path, or validation still fails after `AGENT_REPAIR_ATTEMPTS`. `Files To Touch`, `Implementation Brief`, and `Acceptance Criteria` are optional; when omitted, the agent prompt falls back to generic guidance. Check the `Agent Output` field in Notion for the exact reason.
 
 ## Safety
 

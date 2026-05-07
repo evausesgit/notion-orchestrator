@@ -28,13 +28,6 @@ export function createExecutor(config: ExecutorConfig) {
       };
     }
 
-    if (task.filesToTouch.length === 0 || !task.implementationBrief) {
-      return {
-        outcome: "blocked",
-        summary: `${task.taskId} is configured for agent execution but is missing Files To Touch or Implementation Brief.`,
-      };
-    }
-
     const unsafe = task.filesToTouch.find((file) => !isSafeRelativePath(file));
 
     if (unsafe) {

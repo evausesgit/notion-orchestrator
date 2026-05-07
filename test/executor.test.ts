@@ -86,6 +86,22 @@ describe("createExecutor", () => {
     expect(result.summary).toContain("forbidden path");
   });
 
+  it("allows agent tasks without filesToTouch or implementationBrief", async () => {
+    const executor = createExecutor({
+      repoRoot: workDir,
+      reviewArtifactDir: ".notion-orchestrator/runs",
+    });
+    const result = await executor(
+      makeTask({
+        executionMode: "agent",
+      }),
+      "run_x",
+    );
+
+    expect(result.outcome).toBe("blocked");
+    expect(result.summary).toContain("AGENT_COMMAND_JSON");
+  });
+
   it("blocks agent tasks when no agent command is configured", async () => {
     const executor = createExecutor({
       repoRoot: workDir,
