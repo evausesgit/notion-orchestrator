@@ -339,7 +339,7 @@ pre { margin:0; min-height:420px; max-height:680px; overflow:auto; background:#1
       <input id="NOTION_DATA_SOURCE_ID" name="NOTION_DATA_SOURCE_ID" value="${escapeAttr(config.NOTION_DATA_SOURCE_ID ?? "")}">
 
       <label for="GIT_REPO_URL">Git repository URL</label>
-      <input id="GIT_REPO_URL" name="GIT_REPO_URL" value="${escapeAttr(config.GIT_REPO_URL ?? "")}">
+      <input id="GIT_REPO_URL" name="GIT_REPO_URL" value="${escapeAttr(config.GIT_REPO_URL ?? "https://github.com/evausesgit/mon-super-agent")}">
 
       <div class="row">
         <div>
