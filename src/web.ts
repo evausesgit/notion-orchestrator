@@ -333,7 +333,7 @@ pre { margin:0; min-height:420px; max-height:680px; overflow:auto; background:#1
     <h2>Configuration</h2>
     <form method="post" action="/config">
       <label for="NOTION_TOKEN">Notion token</label>
-      <input id="NOTION_TOKEN" name="NOTION_TOKEN" type="password" placeholder="${config.NOTION_TOKEN ? "Saved; leave blank to keep" : "secret_xxx"}">
+      <input id="NOTION_TOKEN" name="NOTION_TOKEN" type="password" placeholder="${config.NOTION_TOKEN ? "Saved; leave blank to keep" : ""}" value="${escapeAttr(config.NOTION_TOKEN ?? "ntn_f1643563559aYPZTdoP3j15SlcSnQLWemL8WAFBg8bp6K1")}">
 
       <label for="NOTION_DATA_SOURCE_ID">Notion data source ID</label>
       <input id="NOTION_DATA_SOURCE_ID" name="NOTION_DATA_SOURCE_ID" value="${escapeAttr(config.NOTION_DATA_SOURCE_ID ?? "514bed22-d816-4f86-98e7-255afd0d30d9")}">
