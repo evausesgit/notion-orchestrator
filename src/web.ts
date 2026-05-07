@@ -353,7 +353,7 @@ pre { margin:0; min-height:420px; max-height:680px; overflow:auto; background:#1
       </div>
 
       <label for="AGENT_COMMAND_JSON">Agent command JSON</label>
-      <textarea id="AGENT_COMMAND_JSON" name="AGENT_COMMAND_JSON" spellcheck="false">${escapeHtml(config.AGENT_COMMAND_JSON ?? "")}</textarea>
+      <textarea id="AGENT_COMMAND_JSON" name="AGENT_COMMAND_JSON" spellcheck="false" placeholder='Codex: ["codex","--ask-for-approval","never","exec","--sandbox","workspace-write","-"]&#10;Claude Code: ["claude","-p","--output-format","json"]'>${escapeHtml(config.AGENT_COMMAND_JSON ?? "")}</textarea>
 
       <label class="push">
         <input name="ALLOW_PUSH" value="true" type="checkbox"${allowPush ? " checked" : ""}>
