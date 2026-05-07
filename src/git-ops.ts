@@ -92,7 +92,9 @@ export async function commitAndPush(input: CommitAndPushInput): Promise<CommitRe
     input.repoRoot,
     "commit",
     "-m",
-    input.commitMessage ?? `Autonomous ${input.taskId} (${input.runId})`,
+    input.commitMessage
+      ? `${input.taskId}: ${input.commitMessage}`
+      : `Autonomous ${input.taskId} (${input.runId})`,
   ]);
 
   if (input.push) {
