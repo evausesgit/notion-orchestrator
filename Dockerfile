@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # ---- builder ----
-FROM node:20-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 COPY package.json package-lock.json* tsconfig.json ./
 RUN npm ci
@@ -9,7 +9,7 @@ COPY src ./src
 RUN npm run build && npm prune --omit=dev
 
 # ---- runtime ----
-FROM node:20-bookworm-slim AS runtime
+FROM node:22-bookworm-slim AS runtime
 
 LABEL org.opencontainers.image.source="https://github.com/evausesgit/notion-orchestrator"
 LABEL org.opencontainers.image.description="Notion-driven task orchestrator"
